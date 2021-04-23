@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
+import re # for regular expressions
 import os
 import sys
 import csv
 import datetime
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 
 
-plot_folder = "./plots/"
+# Check out https://github.com/bokeh/bokeh/pull/4868/files to see if toggling on/off is possible
+
+# OR try interactive mode: https://matplotlib.org/stable/users/interactive.html
+# let python run in background and enable / disable lines with user input
+
+DATA_folder = "./result/"
+PLOT_folder = "./plots/"
 
 CSV_delim = ';'
 LineWidth = 5
@@ -24,15 +31,26 @@ h_dict = {
         }
 
 plot_list = [
-        {
-            "name": "Ginkgo",
-            "file": "result/Ginkgo_20210422_0440.csv",
-        },
-        {
-            "name": "Heat",
-            "file": "result/Heat_20210423_1640.csv",
-        },
+        "Nest",
+        "NetworKit",
+        "Tensorflow",
+        "STXXL",
+        "fleur",
+        "KaHyPar",
+        "LAPACK",
+        "Glowing-Bear",
+        "KaMIS",
+        "KaHIP",
+        "TLX",
+        "Ginkgo",
+        "Heat",
+        "sdsl-lite",
+        "Thrill",
     ]
+
+name_label_translate = {
+        "ExampleName": "ExampleLabelName",
+    }
 
 def read_csv(path):
     """
@@ -88,9 +106,9 @@ def create_fig_ax():
     Creates a tuple of figure and axis for future plots.
     The size, the visibility of the grid and the log-scale of x and y is preset
     """
-    fig = Figure(figsize=(10, 4)) # Properly garbage collected
-    ax = fig.add_subplot()
-    #fig, ax = plt.subplots(figsize=(10, 4)) # NOT garbage collected!
+    #fig = Figure(figsize=(10, 4)) # Properly garbage collected
+    #ax = fig.add_subplot()
+    fig, ax = plt.subplots(figsize=(10, 4)) # NOT garbage collected!
     grid_minor_color = (.9, .9, .9)
     grid_major_color = (.8, .8, .8)
     ax.grid(True, which="major", axis="both", linestyle='-', linewidth=1, color=grid_major_color)
@@ -101,10 +119,10 @@ def create_fig_ax():
 
 def plot_figure(fig, file_name, plot_prefix = ""):
     """Plots the given figure fig as various formats with a base-name of file_name.
-    plot_folder will be used as the filder for the file; plot_prefix will be the
+    PLOT_folder will be used as the filder for the file; plot_prefix will be the
     prefix of each file."""
 
-    file_path = plot_folder + plot_prefix + file_name
+    file_path = PLOT_folder + plot_prefix + file_name
     p_bbox = "tight"
     p_pad = 0
     p_dpi = 300  # Only useful for non-scalable formats
@@ -115,27 +133,66 @@ def plot_figure(fig, file_name, plot_prefix = ""):
 
 
 
+def print_help():
+    print("Usage: {} [option]\n".format(sys.argv[0])
+        + "Options and arguments:\n"
+        + "-h:     Print this help\n"
+        + "--help: Print this help\n"
+        + "--list: Print the list of candidates for plotting\n"
+        + "No argument means plot."
+         )
+
 if __name__ == "__main__":
-    """
-    if len(sys.argv) != 2 or sys.argv[1] == "--help" or sys.argv[1] == "-h":
-        print("Usage: {} <csv_file>".format(sys.argv[0]))
-        exit(1)
-    """
-    if len(sys.argv) != 1:
-        print("This script does not support arguments!")
+    print_list = False
+    if len(sys.argv) == 2 and (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
+        print_help()
+        exit(0)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--list":
+        print_list = True
+    elif len(sys.argv) != 1:
+        print_help()
         exit(1)
     
     # Change to the directory where the script is placed
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     # Make sure the plot folder exists
-    if not os.path.exists(plot_folder):
-        os.makedirs(plot_folder)
+    if not os.path.exists(PLOT_folder):
+        os.makedirs(PLOT_folder)
+
+    # Read only the files that do not have the date ending
+    dir_list = os.listdir(DATA_folder)
+    expr = re.compile("^.+_\\d{8,8}_\\d{4,4}.csv$")
+
+    csv_list = []
+
+    for el in dir_list:
+        if expr.match(el):
+            continue
+        elif el.endswith(".csv"):
+            csv_list.append(el)
+
+    if (print_list):
+        print("plot_list = [")
+        indent = 4 * " "
+        dindent = 8 * " "
+        for el in csv_list:
+            print('{}"{}",'.format(dindent, el[:-len(".csv")]))
+        print(indent + "]")
+        exit(0)
 
     fig, ax = create_fig_ax()
     
-    for p_dict in plot_list:
-        input_csv = os.path.abspath(p_dict["file"])
+    for csv_file in csv_list:
+        name = csv_file[:-len(".csv")]
+        plot_name = name
+        if name in name_label_translate:
+            plot_name = name_label_translate[name]
+
+        if name not in plot_list:
+            continue
+
+        input_csv = os.path.abspath(DATA_folder + csv_file)
         data, i_dict = read_csv(input_csv)
 
         x_date = []
@@ -151,7 +208,7 @@ if __name__ == "__main__":
             linewidth=LineWidth,
             drawstyle=DrawStyle,
             #color=myblue,
-            label=p_dict["name"])
+            label=plot_name)
     
     # Format dates properly. For details:
     # https://matplotlib.org/stable/gallery/ticks_and_spines/date_concise_formatter.html
@@ -166,6 +223,8 @@ if __name__ == "__main__":
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     ax.set_xlabel("Time")
     ax.set_ylabel("Lines of code")
-    ax.legend(loc="lower right")
+    ax.legend(loc="upper left")
 
-    plot_figure(fig, "LoC_evolution")
+    #plt.ion()
+    plt.show()
+    #plot_figure(fig, "LoC_evolution")

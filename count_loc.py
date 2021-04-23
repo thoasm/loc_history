@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import shutil
 from datetime import datetime
 
 
@@ -11,38 +12,109 @@ CSV_delim = ";"
 LOG_delim = ";"
 OUT_delim = ";"
 
+CLOC_binary = "cloc"
+GIT_binary = "git"
 
-"""
-git log options:
---merges (shows merge commits only)
-
---pretty=format:%ad;%H;
-
---date=iso-strict (changes the output format of the dates without day name)
-"""
-
-default_languages = ["C", "C++", "C/C++ Header", "CUDA", "Python"]
-
-ginkgo_info = {
-        "name": "Ginkgo",
-        "url": "https://github.com/ginkgo-project/ginkgo.git",
-        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
-        "langs": default_languages,
-        "branch": "develop",
-        }
-heat_info = {
-        "name": "Heat",
-        "url": "https://github.com/helmholtz-analytics/heat.git",
-        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
-        "langs": default_languages,
-        "branch": "master",
-        }
+default_languages = [
+        "C", "C++", "C/C++ Header", "CUDA",
+        "Assembly",
+        "CMake", "make",
+        "Java", "C#", "Scala",
+        "Python", "Cython", "Perl",
+        "Bourne Shell", "Bourne Again Shell", "zsh",
+        "Fortran 77", "Fortran 90", "Fortran 95",
+        "Go", "MATLAB", "Julia", "Mathematica", "R",
+        "Pascal",
+        "Visual Basic", "JavaScript", "TypeScript", "PHP",
+    ]
 
 
-git_repositories = [
-        ginkgo_info,
-        heat_info,
-        ]
+# If all languages of `cloc` should be considered, add the dictionary entry
+# "langs": "ALL"
+
+git_repositories = {
+#    "Ginkgo": {
+#        "url": "https://github.com/ginkgo-project/ginkgo.git",
+#        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
+#        "langs": default_languages,
+#        "branch": "develop",
+#        },
+#    "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
+#    "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
+#    "fleur": { "url": "https://iffgit.fz-juelich.de/fleur/fleur.git", },
+#    "Tensorflow": { "url": "https://github.com/helmholtz-analytics/heat.git", },
+#
+#    "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
+#    "Thrill": { "url": "https://github.com/thrill/thrill.git", },
+#    "TLX": { "url": "https://github.com/tlx/tlx.git", },
+#    "KaHIP": { "url": "https://github.com/schulzchristian/KaHIP.git", },
+#    "KaHyPar": { "url": "https://github.com/SebastianSchlag/kahypar.git", },
+#    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", },
+#    "NetworKit": { "url": "https://github.com/networkit/networkit.git", },
+#    "sdsl-lite": { "url": "https://github.com/simongog/sdsl-lite.git", },
+#    #"TBTrader": { "url": "https://github.com/bingmann/tbtrader.git", },
+#    "Glowing-Bear": { "url": "https://github.com/glowing-bear/glowing-bear.git", },
+#    # Algebra
+#    "LAPACK": { "url": "https://github.com/Reference-LAPACK/lapack.git", },
+    "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", },
+    "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", },
+    "DBCSR": { "url": "https://github.com/cp2k/dbcsr.git", },
+    "Eigen": { "url": "https://github.com/eigenteam/eigen-git-mirror.git", },
+    "Armadillo": { "url": "https://gitlab.com/conradsnicta/armadillo-code.git", },
+    "Elemental": { "url": "https://github.com/elemental/Elemental.git", },
+    #"Slate": { "url": "https://icl.utk.edu/slate/", },
+
+    # Graphs
+    "OGDF": { "url": "https://github.com/ogdf/ogdf.git", },
+    "GraphChi": { "url": "https://github.com/GraphChi/graphchi-cpp.git", },
+    "Ligra": { "url": "https://github.com/jshun/ligra.git", },
+    # Bio
+    "SeqAN": { "url": "https://github.com/seqan/seqan.git", },
+    "genesis": { "url": "https://github.com/lczech/genesis.git", },
+    "Treerecs": { "url": "https://gitlab.inria.fr/Phylophile/Treerecs.git", },
+    "RAxML-ng": { "url": "https://github.com/amkozlov/raxml-ng.git", },
+    # Solving
+    "CVC4": { "url": "https://github.com/CVC4/CVC4.git", },
+    "MiniSAT": { "url": "https://github.com/niklasso/minisat.git", },
+    # Etc
+    #"Parsec": { "url": "http://icl.utk.edu/parsec/", },
+    "Charm++": { "url": "https://github.com/UIUC-PPL/charm.git", },
+    "HPX": { "url": "https://github.com/STEllAR-GROUP/hpx.git", },
+    "osrm-backend": { "url": "https://github.com/Project-OSRM/osrm-backend.git", },
+    "CP2K": { "url": "https://github.com/cp2k/cp2k.git", },
+    "root": { "url": "https://github.com/root-project/root.git", },
+    
+    # BIG projects
+#    "Giraph": { "url": "https://github.com/apache/giraph.git", },
+#    "NetworkX": { "url": "https://github.com/networkx/networkx.git", },
+#    "PyTorch": { "url": "https://github.com/pytorch/pytorch.git", },
+#    "mlpack": { "url": "https://github.com/mlpack/mlpack.git", },
+#    "Z3": { "url": "https://github.com/Z3Prover/z3.git", },
+#    "folly": { "url": "https://github.com/facebook/folly.git", },
+#    "git": { "url": "https://github.com/git/git.git", },
+#    "Mesos": { "url": "https://github.com/apache/mesos.git", },
+#    "OpenMPI": { "url": "https://github.com/open-mpi/ompi.git", },
+#    "MPICH": { "url": "https://github.com/pmodels/mpich.git", },
+#    "X10": { "url": "https://github.com/x10-lang/x10.git", },
+#    "Spark": { "url": "https://github.com/apache/spark.git", },
+#    "Flink": { "url": "https://github.com/apache/flink.git", },
+#    "Hadoop": { "url": "https://github.com/apache/hadoop.git", },
+#    "Storm": { "url": "https://github.com/apache/storm.git", },
+#    "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", },
+#    "Arrow": { "url": "https://github.com/apache/arrow.git", },
+#    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", },
+#    "DBeaver": { "url": "https://github.com/dbeaver/dbeaver.git", },
+#    "QuantLib": { "url": "https://github.com/lballabio/quantlib.git", },
+#    "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
+#    "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", },
+#    "LLVM": { "url": "https://github.com/llvm/llvm-project.git", },
+#    "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", },
+#    "Linux": { "url": "https://github.com/torvalds/linux.git", },
+    #"Linux": { "url": "https://github.com/torvalds/linux.git", },
+    # Not supported bc not relying on merges
+    #"GCC": { "url": "https://github.com/gcc-mirror/gcc.git", },
+    #"LLVM": { "url": "https://github.com/llvm/llvm-project.git", }
+    }
 
 def decode(b_str):
     return b_str.decode("utf-8")
@@ -69,7 +141,7 @@ def run_cmd(cmd, allow_failure=False):
 
 
 def call_cloc(info_dict):
-    cmd = ["cloc",
+    cmd = [CLOC_binary,
               "--quiet",
               "--csv",
               "--csv-delimiter={d}".format(d=CSV_delim),
@@ -95,25 +167,30 @@ def call_cloc(info_dict):
 
     # Add only the specified languages
     loc = 0
-    if "langs" in info_dict and info_dict["langs"]:
-        for line in output[data_start:]:
-            row = line.split(CSV_delim)
-            if len(row) > 1 and row[language_idx] in info_dict["langs"]:
-                loc += int(row[loc_idx])
-    #No languages specified -> use the SUM entry
-    else:
-        for line in output[data_start:]:
-            row = line.split(CSV_delim)
-            # If the delimiter was not properly used for SUM, use the ',' separator
-            if len(row) == 1:
-                row = row[0].split(',')
-            if row[language_idx] != "SUM":
-                continue
-            else:
-                loc = int(row[loc_idx])
-                break
+    loc_sum = 0
+    filter_langs = []
+    use_all = ("langs" in info_dict and isinstance(info_dict["langs"], str) and info_dict["langs"] == "ALL")
+    
+    if "langs" not in info_dict:
+        filter_langs = default_languages
+    # Use the languages specified in `info_dict["langs"]`
+    elif not use_all:
+        filter_langs = info_dict["langs"]
+    # ALL languages specified -> use the SUM entry
+    for line in output[data_start:]:
+        row = line.split(CSV_delim)
+        # If the delimiter was not properly used, try the ',' separator
+        if len(row) == 1:
+            row = row[0].split(',')
+        if len(row) > 1 and row[language_idx] in filter_langs:
+            loc += int(row[loc_idx])
+        if len(row) > 1 and row[language_idx] == "SUM":
+            loc_sum = int(row[loc_idx])
 
-    return loc
+    if use_all:
+        loc = loc_sum
+
+    return loc, loc_sum
 
 
 def own_print(out_file, string):
@@ -133,24 +210,46 @@ if __name__ == "__main__":
     # Change to temporary directory
     os.chdir(TMP_storage)
 
-    sp = run_cmd(["cloc", "--version"])
+    try:
+        sp = run_cmd([CLOC_binary, "--version"])
+    except FileNotFoundError as e:
+        print("`{}` binary not found. ".format(CLOC_binary)
+              + "Please change the `CLOC_binary` "
+              + "variable to point to the correct binary of "
+              + "https://github.com/AlDanial/cloc")
+        exit(1)
+
     cloc_version = sp.output[0]
     print("cloc version: {}".format(cloc_version))
-    sp = run_cmd(["git", "--version"])
+    
+    try:
+        sp = run_cmd([GIT_binary, "--version"])
+    except FileNotFoundError as e:
+        print("`{}` binary not found. ".format(GIT_binary)
+              + "Please change the `GIT_binary` "
+              + "variable to point to the correct git binary.")
+        exit(1)
+
     git_version = sp.output[0].split(' ')[-1]
     print("git version: {}".format(git_version))
 
-    for idict in git_repositories:
+    for name, idict in git_repositories.items():
         now = datetime.now()
         date_suffix = now.strftime("_%Y%m%d_%H%M")
-        out_file = OUT_dir + "/" + idict["name"] + date_suffix + ".csv"
-        with open(out_file, "w") as output_file:
-            own_print(output_file, "Date{d}Commit Hash{d}LOC".format(d=OUT_delim))
-            run_cmd(["git", "clone", idict["url"], idict["name"]], True)
-            os.chdir(idict["name"])
+        out_file_tmp = OUT_dir + "/" + name + date_suffix + ".csv"
+        out_file = OUT_dir + "/" + name + ".csv"
+        original_branch = ""
+        with open(out_file_tmp, "w") as output_file:
+            own_print(output_file, "Date{d}Commit Hash{d}LOC{d}Total LOC".format(d=OUT_delim))
+            run_cmd([GIT_binary, "clone", idict["url"], name], True)
+            os.chdir(name)
+            #log_out = run_cmd([GIT_binary, "log", "-1", "--pretty=format:%H"])
+            branch_out = run_cmd([GIT_binary, "branch", "--show-current"])
+            original_branch = branch_out.output[0]
 
-            run_cmd(["git", "checkout", idict["branch"]])
-            log_out = run_cmd(["git", "log",
+            if "branch" in idict:
+                run_cmd([GIT_binary, "checkout", idict["branch"]])
+            log_out = run_cmd([GIT_binary, "log",
                                  "--merges", # Only lists merge commits
                                  "--first-parent", # Only lists merge commits into current branch
                                  "--date=iso-strict",
@@ -162,6 +261,11 @@ if __name__ == "__main__":
                 commit = spl[1]
 
                 # check out specific commit and count locs
-                run_cmd(["git", "checkout", commit])
-                loc = call_cloc(idict)
-                own_print(output_file, "{}{d}{}{d}{}".format(date, commit, loc, d=OUT_delim))
+                run_cmd([GIT_binary, "checkout", commit])
+                loc, loc_sum = call_cloc(idict)
+                own_print(output_file, "{}{d}{}{d}{}{d}{}".format(date, commit, loc, loc_sum, d=OUT_delim))
+            # At the end, go back to the original state
+            run_cmd([GIT_binary, "checkout", original_branch])
+        shutil.copyfile(out_file_tmp, out_file)
+        os.chdir(TMP_storage)
+        #shutil.rmtree(name, False) # remove directory recursively, throw on error
