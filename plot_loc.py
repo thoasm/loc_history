@@ -23,6 +23,17 @@ h_dict = {
         "loc": "LOC",
         }
 
+plot_list = [
+        {
+            "name": "Ginkgo",
+            "file": "result/Ginkgo_20210422_0440.csv",
+        },
+        {
+            "name": "Heat",
+            "file": "result/Heat_20210423_1640.csv",
+        },
+    ]
+
 def read_csv(path):
     """
     Opens the CSV file in 'path' and returns 2 values:
@@ -105,27 +116,42 @@ def plot_figure(fig, file_name, plot_prefix = ""):
 
 
 if __name__ == "__main__":
+    """
     if len(sys.argv) != 2 or sys.argv[1] == "--help" or sys.argv[1] == "-h":
         print("Usage: {} <csv_file>".format(sys.argv[0]))
         exit(1)
+    """
+    if len(sys.argv) != 1:
+        print("This script does not support arguments!")
+        exit(1)
     
-    input_csv = os.path.abspath(sys.argv[1])
     # Change to the directory where the script is placed
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     # Make sure the plot folder exists
     if not os.path.exists(plot_folder):
         os.makedirs(plot_folder)
-    data, i_dict = read_csv(input_csv)
-
-    x_date = []
-    y_loc = []
-    for row in data:
-        x_date.append(datetime.datetime.strptime(row[i_dict["date"]],
-            "%Y-%m-%dT%H:%M:%S%z"))
-        y_loc.append(int(row[i_dict["loc"]]))
 
     fig, ax = create_fig_ax()
+    
+    for p_dict in plot_list:
+        input_csv = os.path.abspath(p_dict["file"])
+        data, i_dict = read_csv(input_csv)
+
+        x_date = []
+        y_loc = []
+        for row in data:
+            x_date.append(datetime.datetime.strptime(row[i_dict["date"]],
+                "%Y-%m-%dT%H:%M:%S%z"))
+            y_loc.append(int(row[i_dict["loc"]]))
+
+        
+        ax.plot(x_date, y_loc,
+            marker='',
+            linewidth=LineWidth,
+            drawstyle=DrawStyle,
+            #color=myblue,
+            label=p_dict["name"])
     
     # Format dates properly. For details:
     # https://matplotlib.org/stable/gallery/ticks_and_spines/date_concise_formatter.html
@@ -138,16 +164,8 @@ if __name__ == "__main__":
     ax.xaxis.set_major_formatter(formatter)
 
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    
-    ax.plot(x_date, y_loc,
-        marker='',
-        linewidth=LineWidth,
-        drawstyle=DrawStyle,
-        color=myblue,
-        label="Ginkgo")
-    
     ax.set_xlabel("Time")
     ax.set_ylabel("Lines of code")
     ax.legend(loc="lower right")
-    
-    plot_figure(fig, "Ginkgo_LoC")
+
+    plot_figure(fig, "LoC_evolution")

@@ -28,8 +28,17 @@ ginkgo_info = {
         "langs": ["C", "C++", "C/C++ Header", "CUDA"],
         "branch": "develop",
         }
+heat_info = {
+        "name": "Heat",
+        "url": "https://github.com/helmholtz-analytics/heat.git",
+        #"langs": ["C", "C++", "C/C++ Header", "CUDA"],
+        "branch": "master",
+        }
 
-git_repositories = [ginkgo_info,
+
+git_repositories = [
+        #ginkgo_info,
+        heat_info,
         ]
 
 def decode(b_str):
@@ -139,7 +148,8 @@ if __name__ == "__main__":
 
             run_cmd(["git", "checkout", idict["branch"]])
             log_out = run_cmd(["git", "log",
-                                 "--merges",
+                                 "--merges", # Only lists merge commits
+                                 "--first-parent", # Only lists merge commits into current branch
                                  "--date=iso-strict",
                                  "--pretty=format:%ad{d}%H{d}%s".format(d=LOG_delim),
                               ])
