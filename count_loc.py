@@ -21,23 +21,26 @@ git log options:
 --date=iso-strict (changes the output format of the dates without day name)
 """
 
+default_languages = ["C", "C++", "C/C++ Header", "CUDA", "Python"]
+
 ginkgo_info = {
         "name": "Ginkgo",
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
-        "langs": ["C", "C++", "C/C++ Header", "CUDA"],
+        "langs": default_languages,
         "branch": "develop",
         }
 heat_info = {
         "name": "Heat",
         "url": "https://github.com/helmholtz-analytics/heat.git",
-        #"langs": ["C", "C++", "C/C++ Header", "CUDA"],
+        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
+        "langs": default_languages,
         "branch": "master",
         }
 
 
 git_repositories = [
-        #ginkgo_info,
+        ginkgo_info,
         heat_info,
         ]
 
