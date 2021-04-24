@@ -4,7 +4,8 @@ import os
 import sys
 import csv
 import datetime
-import matplotlib.pyplot as plt
+import math
+#import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.dates as mdates
@@ -21,7 +22,7 @@ PLOT_folder = "./plots/"
 
 CSV_delim = ';'
 LineWidth = 5
-DrawStyle = "steps-post"#"default"
+DrawStyle = "default" #"steps-post"#"default"
 
 
 ### dictionary to match purpose to CSV header
@@ -30,23 +31,27 @@ h_dict = {
         "loc": "LOC",
         }
 
-plot_list = [
-        "Nest",
-        "NetworKit",
-        "Tensorflow",
-        "STXXL",
+plot_set = set([
+        #"deal.II",
+        #"Eigen",
         "fleur",
-        "KaHyPar",
-        "LAPACK",
-        "Glowing-Bear",
-        "KaMIS",
-        "KaHIP",
-        "TLX",
         "Ginkgo",
         "Heat",
-        "sdsl-lite",
-        "Thrill",
-    ]
+        "hypre",
+        #"git",
+        "LAMMPS",
+        #"LAPACK",
+        "MFEM",
+        "Nest",
+        "petc",
+        "Slate",
+        "SuperLU",
+        "Trilinos",
+        #"NetworKit",
+        #"ScaLAPACK",
+        #"Tensorflow",
+        #"Linux",
+    ])
 
 name_label_translate = {
         "ExampleName": "ExampleLabelName",
@@ -106,9 +111,9 @@ def create_fig_ax():
     Creates a tuple of figure and axis for future plots.
     The size, the visibility of the grid and the log-scale of x and y is preset
     """
-    #fig = Figure(figsize=(10, 4)) # Properly garbage collected
-    #ax = fig.add_subplot()
-    fig, ax = plt.subplots(figsize=(10, 4)) # NOT garbage collected!
+    fig = Figure(figsize=(16, 9)) # Properly garbage collected
+    ax = fig.add_subplot()
+    #fig, ax = plt.subplots(figsize=(16, 9)) # NOT garbage collected!
     grid_minor_color = (.9, .9, .9)
     grid_major_color = (.8, .8, .8)
     ax.grid(True, which="major", axis="both", linestyle='-', linewidth=1, color=grid_major_color)
@@ -139,16 +144,20 @@ def print_help():
         + "-h:     Print this help\n"
         + "--help: Print this help\n"
         + "--list: Print the list of candidates for plotting\n"
+        + "--all:  Prints all candidates\n"
         + "No argument means plot."
          )
 
 if __name__ == "__main__":
     print_list = False
+    print_all = False
     if len(sys.argv) == 2 and (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
         print_help()
         exit(0)
     elif len(sys.argv) == 2 and sys.argv[1] == "--list":
         print_list = True
+    elif len(sys.argv) == 2 and sys.argv[1] == "--all":
+        print_all = True
     elif len(sys.argv) != 1:
         print_help()
         exit(1)
@@ -172,16 +181,21 @@ if __name__ == "__main__":
         elif el.endswith(".csv"):
             csv_list.append(el)
 
+    # Sort the list:
+    csv_list.sort(key=lambda e: e.upper())
+
     if (print_list):
-        print("plot_list = [")
+        print("plot_set = set([")
         indent = 4 * " "
         dindent = 8 * " "
         for el in csv_list:
             print('{}"{}",'.format(dindent, el[:-len(".csv")]))
-        print(indent + "]")
+        print(indent + "])")
         exit(0)
 
     fig, ax = create_fig_ax()
+
+    plot_lines = []
     
     for csv_file in csv_list:
         name = csv_file[:-len(".csv")]
@@ -189,7 +203,7 @@ if __name__ == "__main__":
         if name in name_label_translate:
             plot_name = name_label_translate[name]
 
-        if name not in plot_list:
+        if not print_all and name not in plot_set:
             continue
 
         input_csv = os.path.abspath(DATA_folder + csv_file)
@@ -203,12 +217,12 @@ if __name__ == "__main__":
             y_loc.append(int(row[i_dict["loc"]]))
 
         
-        ax.plot(x_date, y_loc,
-            marker='',
-            linewidth=LineWidth,
-            drawstyle=DrawStyle,
-            #color=myblue,
-            label=plot_name)
+        plot_lines.append(ax.plot(x_date, y_loc,
+                                  marker='',
+                                  linewidth=LineWidth,
+                                  drawstyle=DrawStyle,
+                                  #color=myblue,
+                                  label=plot_name))
     
     # Format dates properly. For details:
     # https://matplotlib.org/stable/gallery/ticks_and_spines/date_concise_formatter.html
@@ -223,8 +237,9 @@ if __name__ == "__main__":
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     ax.set_xlabel("Time")
     ax.set_ylabel("Lines of code")
-    ax.legend(loc="upper left")
+    
+    ax.legend(loc="upper left", ncol=math.ceil(len(plot_lines) / 20))
 
     #plt.ion()
-    plt.show()
-    #plot_figure(fig, "LoC_evolution")
+    #plt.show()
+    plot_figure(fig, "LoC_evolution")

@@ -9,6 +9,7 @@ import time
 
 TMP_storage = "/tmp/loc_count"
 OUT_dir = "./results"
+OUT_dir_tmp = "./results/tmp"
 CSV_delim = ";"
 LOG_delim = ";"
 OUT_delim = ";"
@@ -42,12 +43,14 @@ default_languages = [
 # "langs": "ALL"
 
 git_repositories = {
-    #"delete_me": {"""
+    # Note: Running everything in this list takes about 18 hrs (on Linux),
+    #       which is why it is commented out
+    "delete_me": {"""
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
-        "langs": default_languages,
-        "branch": "develop",
+        #"langs": default_languages,
+        #"branch": "develop",
         },
     "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
     "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
@@ -56,13 +59,17 @@ git_repositories = {
     "Trilinos": { "url": "https://github.com/trilinos/Trilinos.git", "day_interval": 15, },
     "MFEM": { "url": "https://github.com/mfem/mfem.git", },
     "deal.II": { "url": "https://github.com/dealii/dealii.git", "day_interval": 15, },
+    "SuperLU": { "url": "https://github.com/xiaoyeli/superlu.git", "all_commits": True, },
+    "hypre": { "url": "https://github.com/hypre-space/hypre.git", },
+    "petc": { "url": "https://gitlab.com/petsc/petsc.git", "day_interval": 15, },
+    "Slate": { "url": "https://bitbucket.org/icl/slate.git", },
 
     "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
     "Thrill": { "url": "https://github.com/thrill/thrill.git", },
     "TLX": { "url": "https://github.com/tlx/tlx.git", },
     "KaHIP": { "url": "https://github.com/schulzchristian/KaHIP.git", },
     "KaHyPar": { "url": "https://github.com/SebastianSchlag/kahypar.git", },
-    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", "all_commits": True, }, # only 11 commits in default
+    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", "all_commits": True, },
     "NetworKit": { "url": "https://github.com/networkit/networkit.git", },
     "sdsl-lite": { "url": "https://github.com/simongog/sdsl-lite.git", },
     #"TBTrader": { "url": "https://github.com/bingmann/tbtrader.git", },
@@ -70,21 +77,20 @@ git_repositories = {
     # Algebra
     "LAPACK": { "url": "https://github.com/Reference-LAPACK/lapack.git", },
     "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", "day_interval": 15, },
-    "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", "all_commits": True, }, # only 10 commits in default
+    "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", "all_commits": True, },
     "DBCSR": { "url": "https://github.com/cp2k/dbcsr.git", },
-    "Eigen": { "url": "https://github.com/eigenteam/eigen-git-mirror.git", },
-    "Armadillo": { "url": "https://gitlab.com/conradsnicta/armadillo-code.git", "all_commits": True, }, # only 4 commits in default
+    "Eigen": { "url": "https://gitlab.com/libeigen/eigen.git", "day_interval": 15, "all_commits": True, },
+    "Armadillo": { "url": "https://gitlab.com/conradsnicta/armadillo-code.git", "all_commits": True, },
     "Elemental": { "url": "https://github.com/elemental/Elemental.git", },
-    #"Slate": { "url": "https://icl.utk.edu/slate/", },
 
     # Graphs
-    "OGDF": { "url": "https://github.com/ogdf/ogdf.git", "all_commits": True, }, # only 15 commits in default
+    "OGDF": { "url": "https://github.com/ogdf/ogdf.git", "all_commits": True, },
     "GraphChi": { "url": "https://github.com/GraphChi/graphchi-cpp.git", },
     "Ligra": { "url": "https://github.com/jshun/ligra.git", },
     # Bio
     "SeqAN": { "url": "https://github.com/seqan/seqan.git", },
     "genesis": { "url": "https://github.com/lczech/genesis.git", },
-    "Treerecs": { "url": "https://gitlab.inria.fr/Phylophile/Treerecs.git", "all_commits": True, }, # only 4c in d
+    "Treerecs": { "url": "https://gitlab.inria.fr/Phylophile/Treerecs.git", "all_commits": True, },
     "RAxML-ng": { "url": "https://github.com/amkozlov/raxml-ng.git", },
     # Solving
     "CVC4": { "url": "https://github.com/CVC4/CVC4.git", },
@@ -94,36 +100,36 @@ git_repositories = {
     "Charm++": { "url": "https://github.com/UIUC-PPL/charm.git", },
     "HPX": { "url": "https://github.com/STEllAR-GROUP/hpx.git", },
     "osrm-backend": { "url": "https://github.com/Project-OSRM/osrm-backend.git", },
-    "CP2K": { "url": "https://github.com/cp2k/cp2k.git", "day_interval": 15, "all_commits": True, }, # no c
+    "CP2K": { "url": "https://github.com/cp2k/cp2k.git", "day_interval": 15, "all_commits": True, },
     "root": { "url": "https://github.com/root-project/root.git", },
     
     # BIG projects
-    "Giraph": { "url": "https://github.com/apache/giraph.git", "all_commits": True, }, # only 6c
+    "Giraph": { "url": "https://github.com/apache/giraph.git", "all_commits": True, },
     "NetworkX": { "url": "https://github.com/networkx/networkx.git", },
     "PyTorch": { "url": "https://github.com/pytorch/pytorch.git", },
     "mlpack": { "url": "https://github.com/mlpack/mlpack.git", },
     "Z3": { "url": "https://github.com/Z3Prover/z3.git", },
-    "folly": { "url": "https://github.com/facebook/folly.git", "all_commits": True, }, # only 3c
+    "folly": { "url": "https://github.com/facebook/folly.git", "all_commits": True, },
     "git": { "url": "https://github.com/git/git.git", "day_interval": 15, },
-    "Mesos": { "url": "https://github.com/apache/mesos.git", "day_interval": 15, "all_commits": True, }, # only 3c
+    "Mesos": { "url": "https://github.com/apache/mesos.git", "day_interval": 15, "all_commits": True, },
     "OpenMPI": { "url": "https://github.com/open-mpi/ompi.git", "day_interval": 15, },
     "MPICH": { "url": "https://github.com/pmodels/mpich.git", },
-    "X10": { "url": "https://github.com/x10-lang/x10.git", "day_interval": 15, "all_commits": True, }, # only 57c
+    "X10": { "url": "https://github.com/x10-lang/x10.git", "day_interval": 15, "all_commits": True, },
     "Spark": { "url": "https://github.com/apache/spark.git", },
     "Flink": { "url": "https://github.com/apache/flink.git", },
     "Hadoop": { "url": "https://github.com/apache/hadoop.git", },
     "Storm": { "url": "https://github.com/apache/storm.git", "day_interval": 15, },
     "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", "day_interval": 15, },
-    "Arrow": { "url": "https://github.com/apache/arrow.git", "day_interval": 15, "all_commits": True, }, # o c
-    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", "day_interval": 60, "all_commits": True, }, # 4c
+    "Arrow": { "url": "https://github.com/apache/arrow.git", "day_interval": 15, "all_commits": True, },
+    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", "day_interval": 60, "all_commits": True, },
     "DBeaver": { "url": "https://github.com/dbeaver/dbeaver.git", },
     "QuantLib": { "url": "https://github.com/lballabio/quantlib.git", },
     "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
     "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", "day_interval": 60, },
-    "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, }, # 2c
-    "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, }, # 0c
-    "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 60, },
-    #"""},
+    "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, },
+    "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, },
+    "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 365, },
+    """},
     }
 
 def decode(b_str):
@@ -213,6 +219,9 @@ if __name__ == "__main__":
     if not os.path.exists(OUT_dir):
         os.makedirs(OUT_dir)
     OUT_dir = os.path.abspath(OUT_dir)
+    if not os.path.exists(OUT_dir_tmp):
+        os.makedirs(OUT_dir_tmp)
+    OUT_dir_tmp = os.path.abspath(OUT_dir_tmp)
 
     # Make sure the plot folder exists
     if not os.path.exists(TMP_storage):
@@ -246,7 +255,7 @@ if __name__ == "__main__":
     for name, idict in git_repositories.items():
         now = datetime.now()
         date_suffix = now.strftime("_%Y%m%d_%H%M")
-        out_file_tmp = OUT_dir + "/" + name + date_suffix + ".csv"
+        out_file_tmp = OUT_dir_tmp + "/" + name + date_suffix + ".csv"
         out_file = OUT_dir + "/" + name + ".csv"
         original_branch = ""
         with open(out_file_tmp, "w") as output_file:
@@ -255,7 +264,10 @@ if __name__ == "__main__":
                 continue
             run_cmd([GIT_binary, "clone", idict["url"], name], True)
             os.chdir(name)
-            branch_out = run_cmd([GIT_binary, "branch", "--show-current"])
+            # --show-current only supported by git >= 2.22
+            # git_show_current_branch = [GIT_binary, "branch", "--show-current"]
+            git_show_current_branch = [GIT_binary, "symbolic-ref", "--short", "HEAD"]
+            branch_out = run_cmd(git_show_current_branch, True)
             if len(branch_out.output) < 1:
                 os.chdir(TMP_storage)
                 shutil.rmtree(name, False) # remove directory recursively, throw on error
@@ -263,7 +275,7 @@ if __name__ == "__main__":
                 os.chdir(name)
             
             run_cmd([GIT_binary, "pull"], False)
-            branch_out = run_cmd([GIT_binary, "branch", "--show-current"])
+            branch_out = run_cmd(git_show_current_branch)
             original_branch = branch_out.output[0]
 
             if "branch" in idict:
@@ -295,6 +307,8 @@ if __name__ == "__main__":
                 log_list = all_log_out.output
             else:
                 log_list = log_out.output
+            if "day_interval" in idict:
+                log_list.sort(reverse=True) # Sort, so time goes backwards linearly
             own_print(output_file, "Date{d}Commit Hash{d}LOC{d}Total LOC".format(d=OUT_delim))
 
             #"""
