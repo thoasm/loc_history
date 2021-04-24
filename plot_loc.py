@@ -16,7 +16,7 @@ import matplotlib.ticker as mticker
 # OR try interactive mode: https://matplotlib.org/stable/users/interactive.html
 # let python run in background and enable / disable lines with user input
 
-DATA_folder = "./result/"
+DATA_folder = "./results/"
 PLOT_folder = "./plots/"
 
 CSV_delim = ';'

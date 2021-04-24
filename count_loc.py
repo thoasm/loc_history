@@ -8,13 +8,15 @@ import time
 
 
 TMP_storage = "/tmp/loc_count"
-OUT_dir = "./result"
+OUT_dir = "./results"
 CSV_delim = ";"
 LOG_delim = ";"
 OUT_delim = ";"
 
 CLOC_binary = "cloc"
 GIT_binary = "git"
+PRINT_DEBUG = False #True
+
 
 default_languages = [
         "C", "C++", "C/C++ Header", "CUDA",
@@ -31,25 +33,16 @@ default_languages = [
 
 
 # TODO
-# - Add dict entry which is able to turn off the "--merges" parameter
-# - Add dict entry (e.g. "day_interval"), which ignores commits younger than 
-#   the specified interval relative to the previous commit (use datetime to 
-#   check)
-#   -> Maybe have a default of 0, so everything is used
-# - !!!Write the used interval to the beginning of the file!!!
-#   (regardless if determined automatically or manually)
-# - Even for merges, consider to add reasonable interval in case they are
-#   too many
 # - Add automatic discovery when "--merges" does not work (less than 100?
 #   commits) and switch to interval usage (maybe evendetermine the interval
 #   automatically)
-# - Figure out which and how big the interval needs to be for large projects
 
 
 # If all languages of `cloc` should be considered, add the dictionary entry
 # "langs": "ALL"
 
 git_repositories = {
+    #"delete_me": {"""
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
@@ -59,39 +52,39 @@ git_repositories = {
     "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
     "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
     "fleur": { "url": "https://iffgit.fz-juelich.de/fleur/fleur.git", },
-    "LAMMPS": { "url": "https://github.com/lammps/lammps.git", "day_interval": 30, },
-    "Trilinos": { "url": "https://github.com/trilinos/Trilinos.git", },
+    "LAMMPS": { "url": "https://github.com/lammps/lammps.git", "day_interval": 15, },
+    "Trilinos": { "url": "https://github.com/trilinos/Trilinos.git", "day_interval": 15, },
     "MFEM": { "url": "https://github.com/mfem/mfem.git", },
-    "deal.II": { "url": "https://github.com/dealii/dealii.git", },
+    "deal.II": { "url": "https://github.com/dealii/dealii.git", "day_interval": 15, },
 
     "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
     "Thrill": { "url": "https://github.com/thrill/thrill.git", },
     "TLX": { "url": "https://github.com/tlx/tlx.git", },
     "KaHIP": { "url": "https://github.com/schulzchristian/KaHIP.git", },
     "KaHyPar": { "url": "https://github.com/SebastianSchlag/kahypar.git", },
-    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", },
+    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", "all_commits": True, }, # only 11 commits in default
     "NetworKit": { "url": "https://github.com/networkit/networkit.git", },
     "sdsl-lite": { "url": "https://github.com/simongog/sdsl-lite.git", },
     #"TBTrader": { "url": "https://github.com/bingmann/tbtrader.git", },
     "Glowing-Bear": { "url": "https://github.com/glowing-bear/glowing-bear.git", },
     # Algebra
     "LAPACK": { "url": "https://github.com/Reference-LAPACK/lapack.git", },
-    "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", "day_interval": 30, },
-    "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", },
+    "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", "day_interval": 15, },
+    "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", "all_commits": True, }, # only 10 commits in default
     "DBCSR": { "url": "https://github.com/cp2k/dbcsr.git", },
     "Eigen": { "url": "https://github.com/eigenteam/eigen-git-mirror.git", },
-    "Armadillo": { "url": "https://gitlab.com/conradsnicta/armadillo-code.git", },
+    "Armadillo": { "url": "https://gitlab.com/conradsnicta/armadillo-code.git", "all_commits": True, }, # only 4 commits in default
     "Elemental": { "url": "https://github.com/elemental/Elemental.git", },
     #"Slate": { "url": "https://icl.utk.edu/slate/", },
 
     # Graphs
-    "OGDF": { "url": "https://github.com/ogdf/ogdf.git", },
+    "OGDF": { "url": "https://github.com/ogdf/ogdf.git", "all_commits": True, }, # only 15 commits in default
     "GraphChi": { "url": "https://github.com/GraphChi/graphchi-cpp.git", },
     "Ligra": { "url": "https://github.com/jshun/ligra.git", },
     # Bio
     "SeqAN": { "url": "https://github.com/seqan/seqan.git", },
     "genesis": { "url": "https://github.com/lczech/genesis.git", },
-    "Treerecs": { "url": "https://gitlab.inria.fr/Phylophile/Treerecs.git", },
+    "Treerecs": { "url": "https://gitlab.inria.fr/Phylophile/Treerecs.git", "all_commits": True, }, # only 4c in d
     "RAxML-ng": { "url": "https://github.com/amkozlov/raxml-ng.git", },
     # Solving
     "CVC4": { "url": "https://github.com/CVC4/CVC4.git", },
@@ -101,43 +94,40 @@ git_repositories = {
     "Charm++": { "url": "https://github.com/UIUC-PPL/charm.git", },
     "HPX": { "url": "https://github.com/STEllAR-GROUP/hpx.git", },
     "osrm-backend": { "url": "https://github.com/Project-OSRM/osrm-backend.git", },
-    "CP2K": { "url": "https://github.com/cp2k/cp2k.git", },
+    "CP2K": { "url": "https://github.com/cp2k/cp2k.git", "day_interval": 15, "all_commits": True, }, # no c
     "root": { "url": "https://github.com/root-project/root.git", },
     
     # BIG projects
-#    "Giraph": { "url": "https://github.com/apache/giraph.git", },
-#    "NetworkX": { "url": "https://github.com/networkx/networkx.git", },
-#    "PyTorch": { "url": "https://github.com/pytorch/pytorch.git", },
-#    "mlpack": { "url": "https://github.com/mlpack/mlpack.git", },
-#    "Z3": { "url": "https://github.com/Z3Prover/z3.git", },
-#    "folly": { "url": "https://github.com/facebook/folly.git", },
-#    "git": { "url": "https://github.com/git/git.git", },
-#    "Mesos": { "url": "https://github.com/apache/mesos.git", },
-#    "OpenMPI": { "url": "https://github.com/open-mpi/ompi.git", },
-#    "MPICH": { "url": "https://github.com/pmodels/mpich.git", },
-#    "X10": { "url": "https://github.com/x10-lang/x10.git", },
-#    "Spark": { "url": "https://github.com/apache/spark.git", },
-#    "Flink": { "url": "https://github.com/apache/flink.git", },
-#    "Hadoop": { "url": "https://github.com/apache/hadoop.git", },
-#    "Storm": { "url": "https://github.com/apache/storm.git", },
-    "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", },
-#    "Arrow": { "url": "https://github.com/apache/arrow.git", },
-#    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", },
-#    "DBeaver": { "url": "https://github.com/dbeaver/dbeaver.git", },
-#    "QuantLib": { "url": "https://github.com/lballabio/quantlib.git", },
-#    "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
-#    "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", },
-#    "LLVM": { "url": "https://github.com/llvm/llvm-project.git", },
-#    "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", },
-#    "Linux": { "url": "https://github.com/torvalds/linux.git", },
-    #"Linux": { "url": "https://github.com/torvalds/linux.git", },
-    # Not supported bc not relying on merges
-    #"GCC": { "url": "https://github.com/gcc-mirror/gcc.git", },
-    #"LLVM": { "url": "https://github.com/llvm/llvm-project.git", }
+    "Giraph": { "url": "https://github.com/apache/giraph.git", "all_commits": True, }, # only 6c
+    "NetworkX": { "url": "https://github.com/networkx/networkx.git", },
+    "PyTorch": { "url": "https://github.com/pytorch/pytorch.git", },
+    "mlpack": { "url": "https://github.com/mlpack/mlpack.git", },
+    "Z3": { "url": "https://github.com/Z3Prover/z3.git", },
+    "folly": { "url": "https://github.com/facebook/folly.git", "all_commits": True, }, # only 3c
+    "git": { "url": "https://github.com/git/git.git", "day_interval": 15, },
+    "Mesos": { "url": "https://github.com/apache/mesos.git", "day_interval": 15, "all_commits": True, }, # only 3c
+    "OpenMPI": { "url": "https://github.com/open-mpi/ompi.git", "day_interval": 15, },
+    "MPICH": { "url": "https://github.com/pmodels/mpich.git", },
+    "X10": { "url": "https://github.com/x10-lang/x10.git", "day_interval": 15, "all_commits": True, }, # only 57c
+    "Spark": { "url": "https://github.com/apache/spark.git", },
+    "Flink": { "url": "https://github.com/apache/flink.git", },
+    "Hadoop": { "url": "https://github.com/apache/hadoop.git", },
+    "Storm": { "url": "https://github.com/apache/storm.git", "day_interval": 15, },
+    "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", "day_interval": 15, },
+    "Arrow": { "url": "https://github.com/apache/arrow.git", "day_interval": 15, "all_commits": True, }, # o c
+    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", "day_interval": 60, "all_commits": True, }, # 4c
+    "DBeaver": { "url": "https://github.com/dbeaver/dbeaver.git", },
+    "QuantLib": { "url": "https://github.com/lballabio/quantlib.git", },
+    "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
+    "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", "day_interval": 60, },
+    "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, }, # 2c
+    "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, }, # 0c
+    "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 60, },
+    #"""},
     }
 
 def decode(b_str):
-    return b_str.decode("utf-8")
+    return b_str.decode("utf-8", "backslashreplace")
 
 class CmdOutput:
     def __init__(self, sp_completed_process):
@@ -260,47 +250,79 @@ if __name__ == "__main__":
         out_file = OUT_dir + "/" + name + ".csv"
         original_branch = ""
         with open(out_file_tmp, "w") as output_file:
-            own_print(output_file, "Date{d}Commit Hash{d}LOC{d}Total LOC".format(d=OUT_delim))
+            if "url" not in idict:
+                os.chdir(TMP_storage) # need to change dir since we skip the for
+                continue
             run_cmd([GIT_binary, "clone", idict["url"], name], True)
             os.chdir(name)
-            #log_out = run_cmd([GIT_binary, "log", "-1", "--pretty=format:%H"])
+            branch_out = run_cmd([GIT_binary, "branch", "--show-current"])
+            if len(branch_out.output) < 1:
+                os.chdir(TMP_storage)
+                shutil.rmtree(name, False) # remove directory recursively, throw on error
+                run_cmd([GIT_binary, "clone", idict["url"], name], False)
+                os.chdir(name)
+            
+            run_cmd([GIT_binary, "pull"], False)
             branch_out = run_cmd([GIT_binary, "branch", "--show-current"])
             original_branch = branch_out.output[0]
 
             if "branch" in idict:
                 run_cmd([GIT_binary, "checkout", idict["branch"]])
+                run_cmd([GIT_binary, "pull"], False)
+            log_list = []
             log_out = run_cmd([GIT_binary, "log",
                                  "--merges", # Only lists merge commits
                                  "--first-parent", # Only lists merge commits into current branch
                                  "--date=iso-strict",
                                  "--pretty=format:%ad{d}%H{d}%s".format(d=LOG_delim),
                               ])
-            begin = time.time()
-            loc, loc_sum = call_cloc(idict)
-            end = time.time()
-            print("Repo: {}\nTime: {} s\nloc = {} ({})\nnum_commits: {}"
-                    .format(name, end - begin, loc, loc_sum, len(log_out.output)))
-            continue
+            all_log_out = run_cmd([GIT_binary, "log",
+                                  "--date=iso-strict",
+                                  "--pretty=format:%ad{d}%H{d}%s".format(d=LOG_delim),
+                                  ])
+            if PRINT_DEBUG:
+                begin = time.time()
+                loc, loc_sum = call_cloc(idict)
+                end = time.time()
+                own_print(output_file,
+                        "Repo: {}\nTime: {} s\n".format(name, end-begin)
+                       +"loc = {} ({})\n".format(loc, loc_sum)
+                       +"num_commits: {}\ntotal_commits: {}"
+                            .format(len(log_out.output), len(all_log_out.output)))
+                print("Last commit: " + all_log_out.output[-1])
+
+            if "all_commits" in idict and idict["all_commits"]:
+                log_list = all_log_out.output
+            else:
+                log_list = log_out.output
+            own_print(output_file, "Date{d}Commit Hash{d}LOC{d}Total LOC".format(d=OUT_delim))
+
+            #"""
             last_date = ""
-            for line in log_out.output:
+            for line in log_list:
                 spl = line.split(LOG_delim)
                 date = spl[0]
                 commit = spl[1]
                 if last_date:
                     end_date = len("YYYY-MM-DD")
-                    prev_date = datetime.fromiso(date[:end_date])
-                    cur_date = datetime.fromiso(date[:end_date])
-                    differencd = cur_date - prev_date
+                    # Note: we look at the commits current -> last
+                    prev_date = datetime.fromisoformat(last_date[:end_date])
+                    cur_date = datetime.fromisoformat(date[:end_date])
+                    difference = prev_date - cur_date
                     if "day_interval" in idict and difference.days < idict["day_interval"]:
+                        #print("Skipping {}".format(line))
                         continue
                 
-                prev_date = last_date
+                last_date = date
                 
 
                 # check out specific commit and count locs
                 run_cmd([GIT_binary, "checkout", commit])
                 loc, loc_sum = call_cloc(idict)
-                own_print(output_file, "{}{d}{}{d}{}{d}{}".format(date, commit, loc, loc_sum, d=OUT_delim))
+                own_print(output_file, "{}{d}{}{d}{}{d}{}".format(date, commit, loc, loc_sum,
+                                                                  d=OUT_delim))
+            #"""
+
             # At the end, go back to the original state
             run_cmd([GIT_binary, "checkout", original_branch])
         shutil.copyfile(out_file_tmp, out_file)
