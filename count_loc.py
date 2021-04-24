@@ -4,6 +4,7 @@ import os
 import subprocess
 import shutil
 from datetime import datetime
+import time
 
 
 TMP_storage = "/tmp/loc_count"
@@ -29,34 +30,53 @@ default_languages = [
     ]
 
 
+# TODO
+# - Add dict entry which is able to turn off the "--merges" parameter
+# - Add dict entry (e.g. "day_interval"), which ignores commits younger than 
+#   the specified interval relative to the previous commit (use datetime to 
+#   check)
+#   -> Maybe have a default of 0, so everything is used
+# - !!!Write the used interval to the beginning of the file!!!
+#   (regardless if determined automatically or manually)
+# - Even for merges, consider to add reasonable interval in case they are
+#   too many
+# - Add automatic discovery when "--merges" does not work (less than 100?
+#   commits) and switch to interval usage (maybe evendetermine the interval
+#   automatically)
+# - Figure out which and how big the interval needs to be for large projects
+
+
 # If all languages of `cloc` should be considered, add the dictionary entry
 # "langs": "ALL"
 
 git_repositories = {
-#    "Ginkgo": {
-#        "url": "https://github.com/ginkgo-project/ginkgo.git",
-#        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
-#        "langs": default_languages,
-#        "branch": "develop",
-#        },
-#    "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
-#    "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
-#    "fleur": { "url": "https://iffgit.fz-juelich.de/fleur/fleur.git", },
-#    "Tensorflow": { "url": "https://github.com/helmholtz-analytics/heat.git", },
-#
-#    "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
-#    "Thrill": { "url": "https://github.com/thrill/thrill.git", },
-#    "TLX": { "url": "https://github.com/tlx/tlx.git", },
-#    "KaHIP": { "url": "https://github.com/schulzchristian/KaHIP.git", },
-#    "KaHyPar": { "url": "https://github.com/SebastianSchlag/kahypar.git", },
-#    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", },
-#    "NetworKit": { "url": "https://github.com/networkit/networkit.git", },
-#    "sdsl-lite": { "url": "https://github.com/simongog/sdsl-lite.git", },
-#    #"TBTrader": { "url": "https://github.com/bingmann/tbtrader.git", },
-#    "Glowing-Bear": { "url": "https://github.com/glowing-bear/glowing-bear.git", },
-#    # Algebra
-#    "LAPACK": { "url": "https://github.com/Reference-LAPACK/lapack.git", },
-    "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", },
+    "Ginkgo": {
+        "url": "https://github.com/ginkgo-project/ginkgo.git",
+        "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
+        "langs": default_languages,
+        "branch": "develop",
+        },
+    "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
+    "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
+    "fleur": { "url": "https://iffgit.fz-juelich.de/fleur/fleur.git", },
+    "LAMMPS": { "url": "https://github.com/lammps/lammps.git", "day_interval": 30, },
+    "Trilinos": { "url": "https://github.com/trilinos/Trilinos.git", },
+    "MFEM": { "url": "https://github.com/mfem/mfem.git", },
+    "deal.II": { "url": "https://github.com/dealii/dealii.git", },
+
+    "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
+    "Thrill": { "url": "https://github.com/thrill/thrill.git", },
+    "TLX": { "url": "https://github.com/tlx/tlx.git", },
+    "KaHIP": { "url": "https://github.com/schulzchristian/KaHIP.git", },
+    "KaHyPar": { "url": "https://github.com/SebastianSchlag/kahypar.git", },
+    "KaMIS": { "url": "https://github.com/sebalamm/KaMIS.git", },
+    "NetworKit": { "url": "https://github.com/networkit/networkit.git", },
+    "sdsl-lite": { "url": "https://github.com/simongog/sdsl-lite.git", },
+    #"TBTrader": { "url": "https://github.com/bingmann/tbtrader.git", },
+    "Glowing-Bear": { "url": "https://github.com/glowing-bear/glowing-bear.git", },
+    # Algebra
+    "LAPACK": { "url": "https://github.com/Reference-LAPACK/lapack.git", },
+    "OpenBLAS": { "url": "https://github.com/xianyi/OpenBLAS.git", "day_interval": 30, },
     "ScaLAPACK": { "url": "https://github.com/Reference-ScaLAPACK/scalapack.git", },
     "DBCSR": { "url": "https://github.com/cp2k/dbcsr.git", },
     "Eigen": { "url": "https://github.com/eigenteam/eigen-git-mirror.git", },
@@ -100,7 +120,7 @@ git_repositories = {
 #    "Flink": { "url": "https://github.com/apache/flink.git", },
 #    "Hadoop": { "url": "https://github.com/apache/hadoop.git", },
 #    "Storm": { "url": "https://github.com/apache/storm.git", },
-#    "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", },
+    "Tensorflow": { "url": "https://github.com/tensorflow/tensorflow.git", },
 #    "Arrow": { "url": "https://github.com/apache/arrow.git", },
 #    "TuriCreate": { "url": "https://github.com/apple/turicreate.git", },
 #    "DBeaver": { "url": "https://github.com/dbeaver/dbeaver.git", },
@@ -255,10 +275,27 @@ if __name__ == "__main__":
                                  "--date=iso-strict",
                                  "--pretty=format:%ad{d}%H{d}%s".format(d=LOG_delim),
                               ])
+            begin = time.time()
+            loc, loc_sum = call_cloc(idict)
+            end = time.time()
+            print("Repo: {}\nTime: {} s\nloc = {} ({})\nnum_commits: {}"
+                    .format(name, end - begin, loc, loc_sum, len(log_out.output)))
+            continue
+            last_date = ""
             for line in log_out.output:
                 spl = line.split(LOG_delim)
                 date = spl[0]
                 commit = spl[1]
+                if last_date:
+                    end_date = len("YYYY-MM-DD")
+                    prev_date = datetime.fromiso(date[:end_date])
+                    cur_date = datetime.fromiso(date[:end_date])
+                    differencd = cur_date - prev_date
+                    if "day_interval" in idict and difference.days < idict["day_interval"]:
+                        continue
+                
+                prev_date = last_date
+                
 
                 # check out specific commit and count locs
                 run_cmd([GIT_binary, "checkout", commit])
