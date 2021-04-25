@@ -21,8 +21,33 @@ DATA_folder = "./results/"
 PLOT_folder = "./plots/"
 
 CSV_delim = ';'
-LineWidth = 5
+
+## Plotting globals:
+FigSize = (16, 9)
+GridLineWidth = 2
+PlotLineWidth = 5
 DrawStyle = "default" #"steps-post"#"default"
+LabelFontSize = 15
+AxisTickSize = 12
+AxisYScale = 'log' # 'linear'
+AxisXScale = 'linear' # 'log'  Better don't touch since x-axis is Time here
+
+
+def date_filter(date_):
+    return date_.year >= 1900
+
+
+def filter_xy(x, y):
+    if len(x) != len(y):
+        raise AttributeError
+    new_x = []
+    new_y = []
+    for i in range(len(x)):
+        if date_filter(x[i]):
+            new_x.append(x[i])
+            new_y.append(y[i])
+    return new_x, new_y
+    
 
 
 ### dictionary to match purpose to CSV header
@@ -100,10 +125,6 @@ myred     = (0.6350, 0.0780, 0.1840);
 myblack   = (0.2500, 0.2500, 0.2500);
 mybrown   = (0.6500, 0.1600, 0.1600);
 
-### Other globals
-LineWidth = 1
-MarkerSize = 8
-
 
 
 def create_fig_ax():
@@ -111,14 +132,16 @@ def create_fig_ax():
     Creates a tuple of figure and axis for future plots.
     The size, the visibility of the grid and the log-scale of x and y is preset
     """
-    fig = Figure(figsize=(16, 9)) # Properly garbage collected
+    fig = Figure(figsize=FigSize) # Properly garbage collected
     ax = fig.add_subplot()
-    #fig, ax = plt.subplots(figsize=(16, 9)) # NOT garbage collected!
+    #fig, ax = plt.subplots(figsize=FigSize) # NOT garbage collected!
     grid_minor_color = (.9, .9, .9)
     grid_major_color = (.8, .8, .8)
-    ax.grid(True, which="major", axis="both", linestyle='-', linewidth=1, color=grid_major_color)
-    ax.grid(True, which="minor", axis="both", linestyle=':', linewidth=1, color=grid_minor_color)
+    ax.grid(True, which="major", axis="both", linestyle='-', linewidth=GridLineWidth, color=grid_major_color)
+    ax.grid(True, which="minor", axis="both", linestyle=':', linewidth=GridLineWidth, color=grid_minor_color)
     #ax.loglog()
+    ax.set_yscale(AxisYScale)
+    ax.set_xscale(AxisXScale)
     return fig, ax
 
 
@@ -216,10 +239,11 @@ if __name__ == "__main__":
                 "%Y-%m-%dT%H:%M:%S%z"))
             y_loc.append(int(row[i_dict["loc"]]))
 
+        x_date, y_loc = filter_xy(x_date, y_loc)
         
         plot_lines.append(ax.plot(x_date, y_loc,
                                   marker='',
-                                  linewidth=LineWidth,
+                                  linewidth=PlotLineWidth,
                                   drawstyle=DrawStyle,
                                   #color=myblue,
                                   label=plot_name))
@@ -235,10 +259,14 @@ if __name__ == "__main__":
     ax.xaxis.set_major_formatter(formatter)
 
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Lines of code")
     
-    ax.legend(loc="upper left", ncol=math.ceil(len(plot_lines) / 20))
+    ax.tick_params(axis='x', labelsize=AxisTickSize)
+    ax.tick_params(axis='y', labelsize=AxisTickSize)
+    
+    ax.set_xlabel("Time", fontsize=LabelFontSize)
+    ax.set_ylabel("Lines of code", fontsize=LabelFontSize)
+    
+    ax.legend(loc="upper left", ncol=math.ceil(len(plot_lines) / 20), fontsize=LabelFontSize)
 
     #plt.ion()
     #plt.show()
