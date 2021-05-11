@@ -45,6 +45,25 @@ default_languages = [
 git_repositories = {
     # Note: Running everything in this list takes about 18 hrs (on Linux),
     #       which is why it is commented out
+    "Blitz": { "url": "https://github.com/blitzpp/blitz.git", },
+    "Ghost": { "url": "https://bitbucket.org/essex/ghost.git", "day_interval": 15, "all_commits": True, },
+    "uBLAS": { "url": "https://github.com/boostorg/ublas.git", "day_interval": 15, "all_commits": True, },
+    "KBLAS-gpu": { "url": "https://github.com/ecrc/kblas-gpu.git", "all_commits": True, },
+    "KBLAS-cpu": { "url": "https://github.com/ecrc/kblas-cpu.git", "all_commits": True, },
+    "clBLAS": { "url": "https://github.com/clMathLibraries/clBLAS.git", "all_commits": True, },
+    "FLENS": { "url": "https://github.com/michael-lehn/FLENS.git", "all_commits": True, },
+    "SuiteSparse": { "url": "https://github.com/DrTimothyAldenDavis/SuiteSparse.git", "all_commits": True, },
+    "BootCMatch": { "url": "https://github.com/bootcmatch/BootCMatch.git", "all_commits": True, },
+    "AMGCL": { "url": "https://github.com/ddemidov/amgcl.git", "day_interval": 15, "all_commits": True, },
+    "DUNE-ISTL": { "url": "https://github.com/dune-project/dune-istl.git", },
+    "BLOPEX": { "url": "https://bitbucket.org/joseroman/blopex.git", "all_commits": True, },
+    "EVSL": { "url": "https://github.com/eigs/EVSL.git", "all_commits": True, },
+    "Spectra": { "url": "https://github.com/yixuan/spectra.git", "all_commits": True, },
+    "Dense_HODLR": { "url": "https://github.com/amiraa127/Dense_HODLR.git", "all_commits": True, },
+    "H2Lib": { "url": "https://github.com/H2Lib/H2Lib.git", "all_commits": True, },
+    "hmat-oss": { "url": "https://github.com/jeromerobert/hmat-oss.git", "all_commits": True, },
+    "STRUMPACK": { "url": "https://github.com/pghysels/STRUMPACK.git", "all_commits": True, },
+    "GetFEM": { "url": "https://git.savannah.nongnu.org/git/getfem.git", "day_interval": 90, "all_commits": True, },
     "delete_me": {"""
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
