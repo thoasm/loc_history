@@ -7,16 +7,17 @@ from datetime import datetime
 import time
 
 
-TMP_storage = "/tmp/loc_count"
+#TMP_storage = "/tmp/loc_count"
+TMP_storage = "/home/thomas/projects/tmp/loc_count"
 OUT_dir = "./results"
 OUT_dir_tmp = "./results/tmp"
-CSV_delim = ";"
+CSV_delim = "," # In cloc-version 1.9, only ',' works properly as a delimiter
 LOG_delim = ";"
 OUT_delim = ";"
 
 CLOC_binary = "cloc"
 GIT_binary = "git"
-PRINT_DEBUG = False #True
+PRINT_DEBUG = True
 
 
 default_languages = [
@@ -45,6 +46,7 @@ default_languages = [
 git_repositories = {
     # Note: Running everything in this list takes about 18 hrs (on Linux),
     #       which is why it is commented out
+    "delete_me": {"""
     "Blitz": { "url": "https://github.com/blitzpp/blitz.git", },
     "Ghost": { "url": "https://bitbucket.org/essex/ghost.git", "day_interval": 15, "all_commits": True, },
     "uBLAS": { "url": "https://github.com/boostorg/ublas.git", "day_interval": 15, "all_commits": True, },
@@ -64,7 +66,7 @@ git_repositories = {
     "hmat-oss": { "url": "https://github.com/jeromerobert/hmat-oss.git", "all_commits": True, },
     "STRUMPACK": { "url": "https://github.com/pghysels/STRUMPACK.git", "all_commits": True, },
     "GetFEM": { "url": "https://git.savannah.nongnu.org/git/getfem.git", "day_interval": 90, "all_commits": True, },
-    "delete_me": {"""
+    "Ginkgo_Container": { "url": "git@gitlab.com:ginkgo-project/ginkgo-containers.git" },
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
@@ -146,9 +148,9 @@ git_repositories = {
     "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
     "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", "day_interval": 60, },
     "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, },
+    #"""},
     "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, },
     "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 365, },
-    """},
     }
 
 def decode(b_str):
@@ -315,11 +317,11 @@ if __name__ == "__main__":
                 begin = time.time()
                 loc, loc_sum = call_cloc(idict)
                 end = time.time()
-                own_print(output_file,
-                        "Repo: {}\nTime: {} s\n".format(name, end-begin)
-                       +"loc = {} ({})\n".format(loc, loc_sum)
-                       +"num_commits: {}\ntotal_commits: {}"
-                            .format(len(log_out.output), len(all_log_out.output)))
+                #own_print(output_file,
+                print("Repo: {}\nTime: {} s\n".format(name, end-begin)
+                      +"loc = {} ({})\n".format(loc, loc_sum)
+                      +"num_commits: {}\ntotal_commits: {}"
+                           .format(len(log_out.output), len(all_log_out.output)))
                 print("Last commit: " + all_log_out.output[-1])
 
             if "all_commits" in idict and idict["all_commits"]:
