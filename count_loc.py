@@ -7,12 +7,14 @@ from datetime import datetime
 import time
 
 
-#TMP_storage = "/tmp/loc_count"
-TMP_storage = "/home/thomas/projects/tmp/loc_count"
+TMP_storage = "/tmp/loc_count"
 OUT_dir = "./results"
 OUT_dir_tmp = "./results/tmp"
+
+# Internal delimiters (never seen in output)
 CSV_delim = "," # In cloc-version 1.9, only ',' works properly as a delimiter
 LOG_delim = ";"
+# Output delimiter (both in file and to cout)
 OUT_delim = ";"
 
 CLOC_binary = "cloc"
@@ -29,7 +31,9 @@ default_languages = [
         "Bourne Shell", "Bourne Again Shell", "zsh",
         "Fortran 77", "Fortran 90", "Fortran 95",
         "Go", "MATLAB", "Julia", "Mathematica", "R",
-        "Pascal",
+        # "Pascal" is shown for .inc files, internally, it is "PHP/Pascal"
+        # (see `cloc --explain PHP/Pascal` or `cloc --show-ext=inc`
+        "Pascal", "PHP/Pascal",     
         "Visual Basic", "JavaScript", "TypeScript", "PHP",
     ]
 
@@ -44,9 +48,10 @@ default_languages = [
 # "langs": "ALL"
 
 git_repositories = {
-    # Note: Running everything in this list takes about 18 hrs (on Linux),
-    #       which is why it is commented out
-    "delete_me": {"""
+    # Note: Running everything in this list takes more than 24 hrs (on Linux),
+    #       which is why it is recommended to comment out parts
+    #"delete_me": {"""
+    # """}
     "Blitz": { "url": "https://github.com/blitzpp/blitz.git", },
     "Ghost": { "url": "https://bitbucket.org/essex/ghost.git", "day_interval": 15, "all_commits": True, },
     "uBLAS": { "url": "https://github.com/boostorg/ublas.git", "day_interval": 15, "all_commits": True, },
@@ -84,6 +89,7 @@ git_repositories = {
     "hypre": { "url": "https://github.com/hypre-space/hypre.git", },
     "petc": { "url": "https://gitlab.com/petsc/petsc.git", "day_interval": 15, },
     "Slate": { "url": "https://bitbucket.org/icl/slate.git", },
+    "MAGMA": {"url": "https://bitbucket.org/icl/magma.git", },
 
     "STXXL": { "url": "https://github.com/stxxl/stxxl.git", },
     "Thrill": { "url": "https://github.com/thrill/thrill.git", },
@@ -148,7 +154,6 @@ git_repositories = {
     "RocksDB": { "url": "https://github.com/facebook/rocksdb.git", },
     "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", "day_interval": 60, },
     "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, },
-    #"""},
     "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, },
     "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 365, },
     }
