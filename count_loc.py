@@ -78,6 +78,7 @@ git_repositories = {
         #"langs": default_languages,
         #"branch": "develop",
         },
+    "Kokkos Kernels": { "url": "https://github.com/kokkos/kokkos-kernels", "branch": "develop", },
     "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
     "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
     "fleur": { "url": "https://iffgit.fz-juelich.de/fleur/fleur.git", },
@@ -156,6 +157,7 @@ git_repositories = {
     "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, },
     "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, },
     "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 365, },
+    #"""},
     }
 
 def decode(b_str):
