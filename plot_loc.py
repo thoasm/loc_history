@@ -30,11 +30,12 @@ DrawStyle = "default" #"steps-post"#"default"
 LabelFontSize = 15
 AxisTickSize = 12
 AxisYScale = 'log' # 'linear'
+AxisYScale = 'linear'
 AxisXScale = 'linear' # 'log'  Better don't touch since x-axis is Time here
 
 
 def date_filter(date_):
-    return date_.year >= 1900
+    return date_.year >= 2017
 
 
 def filter_xy(x, y):
@@ -59,39 +60,40 @@ h_dict = {
 plot_set = set([
         #"deal.II",
         #"Eigen",
-        "fleur",
+        #"fleur",
         "Ginkgo",
-        "Heat",
-        "hypre",
+        #"Heat",
+        #"hypre",
         #"git",
-        "LAMMPS",
+        #"LAMMPS",
         #"LAPACK",
         "MFEM",
-        "Nest",
-        "petc",
+        #"Nest",
+        #"petc",
         "Slate",
         "SuperLU",
-        "Elemental",
+        #"Elemental",
         #"Trilinos",
-        "Blitz",
-        "Ghost",
-        "uBLAS",
-        "KBLAS-gpu",
-        "KBLAS-cpu",
-        "clBLAS",
-        "FLENS",
-        "SuiteSparse",
-        "BootCMatch",
-        "AMGCL",
-        "DUNE-ISTL",
-        "BLOPEX",
-        "EVSL",
-        "Spectra",
-        "Dense_HODLR",
-        "H2Lib",
-        "hmat-oss",
+        #"Blitz",
+        #"Ghost",
+        #"uBLAS",
+        #"KBLAS-gpu",
+        #"KBLAS-cpu",
+        #"clBLAS",
+        #"FLENS",
+        #"SuiteSparse",
+        #"BootCMatch",
+        #"AMGCL",
+        #"DUNE-ISTL",
+        #"BLOPEX",
+        #"EVSL",
+        #"Spectra",
+        #"Dense_HODLR",
+        #"H2Lib",
+        #"hmat-oss",
         "STRUMPACK",
-        "GetFEM",
+        #"GetFEM",
+        "Kokkos Kernels",
     ])
 
 name_label_translate = {
