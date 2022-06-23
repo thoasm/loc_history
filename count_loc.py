@@ -76,7 +76,7 @@ git_repositories = {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
         #"langs": default_languages,
-        #"branch": "develop",
+        "branch": "develop",
         },
     "Kokkos Kernels": { "url": "https://github.com/kokkos/kokkos-kernels", "branch": "develop", },
     "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
@@ -88,7 +88,7 @@ git_repositories = {
     "deal.II": { "url": "https://github.com/dealii/dealii.git", "day_interval": 15, },
     "SuperLU": { "url": "https://github.com/xiaoyeli/superlu.git", "all_commits": True, },
     "hypre": { "url": "https://github.com/hypre-space/hypre.git", },
-    "petc": { "url": "https://gitlab.com/petsc/petsc.git", "day_interval": 15, },
+    "petsc": { "url": "https://gitlab.com/petsc/petsc.git", "day_interval": 15, },
     "Slate": { "url": "https://bitbucket.org/icl/slate.git", },
     "MAGMA": {"url": "https://bitbucket.org/icl/magma.git", },
 
