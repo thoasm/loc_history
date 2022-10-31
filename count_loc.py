@@ -71,7 +71,7 @@ git_repositories = {
     "hmat-oss": { "url": "https://github.com/jeromerobert/hmat-oss.git", "all_commits": True, },
     "STRUMPACK": { "url": "https://github.com/pghysels/STRUMPACK.git", "all_commits": True, },
     "GetFEM": { "url": "https://git.savannah.nongnu.org/git/getfem.git", "day_interval": 90, "all_commits": True, },
-    "Ginkgo_Container": { "url": "git@gitlab.com:ginkgo-project/ginkgo-containers.git" },
+    #"Ginkgo_Container": { "url": "git@gitlab.com:ginkgo-project/ginkgo-containers.git" },
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
         "add_cloc_args": ["--force-lang=cuda,hpp.inc"],
