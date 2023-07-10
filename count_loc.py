@@ -3,7 +3,7 @@
 import os
 import subprocess
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 
 
@@ -42,6 +42,7 @@ default_languages = [
 # - Add automatic discovery when "--merges" does not work (less than 100?
 #   commits) and switch to interval usage (maybe evendetermine the interval
 #   automatically)
+# - Detection that something went wrong to clean out the TMP directory
 
 
 # If all languages of `cloc` should be considered, add the dictionary entry
@@ -51,8 +52,6 @@ git_repositories = {
     # Note: Running everything in this list takes more than 24 hrs (on Linux),
     #       which is why it is recommended to comment out parts
     #"delete_me": {"""
-    # """}
-    "Blitz": { "url": "https://github.com/blitzpp/blitz.git", },
     "Ghost": { "url": "https://bitbucket.org/essex/ghost.git", "day_interval": 15, "all_commits": True, },
     "uBLAS": { "url": "https://github.com/boostorg/ublas.git", "day_interval": 15, "all_commits": True, },
     "KBLAS-gpu": { "url": "https://github.com/ecrc/kblas-gpu.git", "all_commits": True, },
@@ -251,7 +250,7 @@ if __name__ == "__main__":
         os.makedirs(OUT_dir_tmp)
     OUT_dir_tmp = os.path.abspath(OUT_dir_tmp)
 
-    # Make sure the plot folder exists
+    # Make sure the temporary folder exists
     if not os.path.exists(TMP_storage):
         os.makedirs(TMP_storage)
     # Change to temporary directory
@@ -281,16 +280,26 @@ if __name__ == "__main__":
     print("git version: {}".format(git_version))
 
     for name, idict in git_repositories.items():
+        
         now = datetime.now()
         date_suffix = now.strftime("_%Y%m%d_%H%M")
         out_file_tmp = OUT_dir_tmp + "/" + name + date_suffix + ".csv"
         out_file = OUT_dir + "/" + name + ".csv"
-        original_branch = ""
+        existing_cloc_data = []
+        newest_processed_commit_date = datetime.combine(datetime.min.date(), datetime.min.time(), timezone.utc)
+        if os.path.exists(out_file):
+            if PRINT_DEBUG:
+                print("Existing cloc result file found: {}".format(out_file))
+            with open(out_file, 'r') as input_file:
+                existing_cloc_data = input_file.readlines()[1:]
+                newest_processed_commit_date = datetime.fromisoformat(existing_cloc_data[0].split(LOG_delim)[0])
+                if PRINT_DEBUG:
+                    print("Latest processed commit at: {}".format(newest_processed_commit_date))
         with open(out_file_tmp, "w") as output_file:
             if "url" not in idict:
                 os.chdir(TMP_storage) # need to change dir since we skip the for
                 continue
-            run_cmd([GIT_binary, "clone", idict["url"], name], True)
+            run_cmd([GIT_binary, "clone", idict["url"], name], False)
             os.chdir(name)
             # --show-current only supported by git >= 2.22
             # git_show_current_branch = [GIT_binary, "branch", "--show-current"]
@@ -303,8 +312,6 @@ if __name__ == "__main__":
                 os.chdir(name)
             
             run_cmd([GIT_binary, "pull"], False)
-            branch_out = run_cmd(git_show_current_branch)
-            original_branch = branch_out.output[0]
 
             if "branch" in idict:
                 run_cmd([GIT_binary, "checkout", idict["branch"]])
@@ -329,14 +336,15 @@ if __name__ == "__main__":
                       +"loc = {} ({})\n".format(loc, loc_sum)
                       +"num_commits: {}\ntotal_commits: {}"
                            .format(len(log_out.output), len(all_log_out.output)))
-                print("Last commit: " + all_log_out.output[-1])
+                print("Oldest commit: " + all_log_out.output[-1])
 
             if "all_commits" in idict and idict["all_commits"]:
                 log_list = all_log_out.output
             else:
                 log_list = log_out.output
             if "day_interval" in idict:
-                log_list.sort(reverse=True) # Sort, so time goes backwards linearly
+                # Sort, so time goes backwards linearly (imperfect sort because of the time zone)
+                log_list.sort(reverse=True) 
             own_print(output_file, "Date{d}Commit Hash{d}LOC{d}Total LOC".format(d=OUT_delim))
 
             #"""
@@ -345,6 +353,11 @@ if __name__ == "__main__":
                 spl = line.split(LOG_delim)
                 date = spl[0]
                 commit = spl[1]
+                if newest_processed_commit_date >= datetime.fromisoformat(date):
+                    if PRINT_DEBUG:
+                        print("Reached older commit than processed previously. Finishing up...")
+                    # Reached a point that has already been processed
+                    break
                 if last_date:
                     end_date = len("YYYY-MM-DD")
                     # Note: we look at the commits current -> last
@@ -363,10 +376,13 @@ if __name__ == "__main__":
                 loc, loc_sum = call_cloc(idict)
                 own_print(output_file, "{}{d}{}{d}{}{d}{}".format(date, commit, loc, loc_sum,
                                                                   d=OUT_delim))
+            # Fill the result file with the old, existing data
+            for line in existing_cloc_data:
+                output_file.write(line) # Newline already part of the line
             #"""
 
-            # At the end, go back to the original state
-            run_cmd([GIT_binary, "checkout", original_branch])
+            # At the end, delete the git repository
+            os.chdir(TMP_storage)
+            shutil.rmtree(name, False) # remove directory recursively, throw on error
         shutil.copyfile(out_file_tmp, out_file)
-        os.chdir(TMP_storage)
-        #shutil.rmtree(name, False) # remove directory recursively, throw on error
+    shutil.rmtree(TMP_storage, False) # remove temporary directory recursively, throw on error

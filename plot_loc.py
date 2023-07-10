@@ -3,7 +3,7 @@ import re # for regular expressions
 import os
 import sys
 import csv
-import datetime
+from datetime import datetime
 import math
 #import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -253,7 +253,7 @@ if __name__ == "__main__":
         x_date = []
         y_loc = []
         for row in data:
-            x_date.append(datetime.datetime.strptime(row[i_dict["date"]],
+            x_date.append(datetime.strptime(row[i_dict["date"]],
                 "%Y-%m-%dT%H:%M:%S%z"))
             y_loc.append(int(row[i_dict["loc"]]))
 
@@ -288,4 +288,6 @@ if __name__ == "__main__":
 
     #plt.ion()
     #plt.show()
-    plot_figure(fig, "LoC_evolution")
+    now = datetime.now()
+    date_prefix = now.strftime("%Y%m%d_%H%M_")
+    plot_figure(fig, date_prefix + "LoC_evolution")
