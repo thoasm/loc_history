@@ -69,7 +69,7 @@ git_repositories = {
     "H2Lib": { "url": "https://github.com/H2Lib/H2Lib.git", "all_commits": True, },
     "hmat-oss": { "url": "https://github.com/jeromerobert/hmat-oss.git", "all_commits": True, },
     "STRUMPACK": { "url": "https://github.com/pghysels/STRUMPACK.git", "all_commits": True, },
-    "GetFEM": { "url": "https://git.savannah.nongnu.org/git/getfem.git", "day_interval": 90, "all_commits": True, },
+    "GetFEM": { "url": "https://git.savannah.nongnu.org/git/getfem.git", "day_interval": 60, "all_commits": True, },
     #"Ginkgo_Container": { "url": "git@gitlab.com:ginkgo-project/ginkgo-containers.git" },
     "Ginkgo": {
         "url": "https://github.com/ginkgo-project/ginkgo.git",
@@ -155,7 +155,7 @@ git_repositories = {
     "emacs": { "url": "https://github.com/emacs-mirror/emacs.git", "day_interval": 60, },
     "LLVM": { "url": "https://github.com/llvm/llvm-project.git", "day_interval": 60, "all_commits": True, },
     "gcc": { "url": "https://github.com/gcc-mirror/gcc.git", "day_interval": 60, "all_commits": True, },
-    "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 365, },
+    "Linux": { "url": "https://github.com/torvalds/linux.git", "day_interval": 90, },
     #"""},
     }
 
@@ -177,8 +177,10 @@ class CmdOutput:
 
 def run_cmd(cmd, allow_failure=False):
     sp = subprocess.run(cmd, capture_output=True)
+    if PRINT_DEBUG and sp.returncode != 0:
+        print("Command {c} failed with error code {e}\n".format(c=cmd, e=sp.returncode)
+              + "Output:\n{out}\nError:\n{err}\n".format(out=sp.stdout, err=sp.stderr))
     if not allow_failure:
-        #print("Output:\n{}\nError:\n{}\n".format(sp.stdout, sp.stderr))
         sp.check_returncode()
     return CmdOutput(sp)
 

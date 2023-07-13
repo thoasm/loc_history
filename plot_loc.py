@@ -74,7 +74,6 @@ plot_set = set([
         "SuperLU",
         #"Elemental",
         #"Trilinos",
-        #"Blitz",
         #"Ghost",
         "uBLAS",
         "KBLAS-gpu",
