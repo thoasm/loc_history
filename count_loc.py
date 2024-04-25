@@ -77,6 +77,7 @@ git_repositories = {
         #"langs": default_languages,
         "branch": "develop",
         },
+    "Kokkos": { "url": "https://github.com/kokkos/kokkos", "branch": "develop", },
     "Kokkos Kernels": { "url": "https://github.com/kokkos/kokkos-kernels", "branch": "develop", },
     "Heat": { "url": "https://github.com/helmholtz-analytics/heat.git", },
     "Nest": { "url": "https://github.com/nest/nest-simulator.git", },
