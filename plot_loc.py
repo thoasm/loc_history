@@ -23,7 +23,8 @@ PLOT_folder = "./plots/"
 CSV_delim = ';'
 
 ## Plotting globals:
-FigSize = (16, 9)
+#FigSize = (16, 9)      # This is used for a big figure with lots of lines
+FigSize = (6.4, 3.6)    # This is nice if it's only Ginkgo
 GridLineWidth = 2
 PlotLineWidth = 5
 DrawStyle = "default" #"steps-post"#"default"
@@ -67,16 +68,16 @@ plot_set = set([
         #"git",
         #"LAMMPS",
         #"LAPACK",
-        "MFEM",
+        #"MFEM",
         #"Nest",
         #"petsc",
-        "Slate",
-        "SuperLU",
+        #"Slate",
+        #"SuperLU",
         #"Elemental",
         #"Trilinos",
         #"Ghost",
-        "uBLAS",
-        "KBLAS-gpu",
+        #"uBLAS",
+        #"KBLAS-gpu",
         #"KBLAS-cpu",
         #"clBLAS",
         #"FLENS",
@@ -84,15 +85,15 @@ plot_set = set([
         #"BootCMatch",
         #"AMGCL",
         #"DUNE-ISTL",
-        "BLOPEX",
+        #"BLOPEX",
         #"EVSL",
         #"Spectra",
         #"Dense_HODLR",
         #"H2Lib",
         #"hmat-oss",
-        "STRUMPACK",
+        #"STRUMPACK",
         #"GetFEM",
-        "Kokkos Kernels",
+        #"Kokkos Kernels",
     ])
 
 name_label_translate = {
